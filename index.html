@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Chess</title>
+		<style type="text/css">
+		#board{
+			width: 800px;
+			height: 800px;
+			position: relative;
+		}
+
+		.position{
+			background-color: rgba(0,0,0,.5);
+		}
+
+		.position.active{
+			background-color: rgba(255,0,0,.5);
+		}
+		</style>
+	</head>
+	<body>
+
+		<div id="board"></div>
+
+		<script src="bower_components/pathfinding/pathfinding-browser.min.js"></script>
+		<script src="bower_components/jquery/dist/jquery.js"></script>
+		<script type="text/javascript">
+		var findPath;
+
+		$(document).ready(function(){
+			//Chess neighbors code
+			var getChessNeighbors = function(node, diagonalMovement) {
+			    var nodes = this.nodes;
+			    var explore;
+			    var curx = node.x, cury = node.y;
+			    var possibleMoves = [];
+			    var piece = this.piece;
+			    var findMove = function(dx,dy, grid){
+			      var x = curx+dx, y = cury+dy;
+			      while(grid.isWalkableAt(x, y)){
+			        possibleMoves.push(nodes[y][x]);
+			        if(explore.single){break}
+			        x += dx;
+			        y += dy;
+			      }
+			    }
+			    if(piece==='rook'){
+			      explore=[[0,1],[1,0],[0,-1],[-1,0]];
+			    } else if (piece==='bishop'){
+			      explore=[[1,1],[1,-1],[-1,1],[-1,-1]];
+			    } else if (piece==='knight'){
+			      explore=[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
+			      explore.single = true;
+			    } else if (piece==='king'||piece==='queen'){
+			      explore=[[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,-1],[-1,1]];
+			      if(piece==='king') explore.single = true;
+			    }
+			    for(var i = 0; i < explore.length; i++){
+			      var dx,dy;
+			      dx=explore[i][0];
+			      dy=explore[i][1];
+			      findMove(dx,dy, this);
+			    }
+			
+			    return possibleMoves;
+			};
+
+			//chess board?!
+			var matrix = [
+			    [0, 0, 0, 1, 0, 0, 1, 0],
+			    [1, 0, 0, 0, 1, 0, 1, 0],
+			    [0, 0, 0, 0, 0, 0, 1, 0],
+			    [1, 0, 0, 0, 1, 0, 1, 0],
+			    [0, 0, 1, 0, 0, 0, 1, 0],
+			    [0, 0, 0, 1, 0, 0, 1, 0],
+			    [1, 0, 0, 0, 1, 0, 1, 0],
+			    [0, 0, 1, 0, 0, 0, 1, 0],
+			];
+			var grid = new PF.Grid(matrix);
+			
+			var finder = new PF.AStarFinder({
+				heuristic: function(x,y){
+					return 0.5*(x+y);//Lower number means better paths, worse performace.
+				}
+			});
+					
+
+			function draw2DArray(input){
+				for(var i = 0; i < input.length; i++){
+					for(var j = 0; j < input[i].length; j++){
+						if(input[i][j]==0) $('#board').append('<div class="position" style=" position:absolute; width:100px; height:100px; top:'+i*100+'px; left:'+j*100+'px;"></div>');
+					}
+				}
+			}
+
+			function drawPath(input){
+				for(var i = 0; i < input.length; i++){
+					$('#board').append('<div class="position active" style="position:absolute; width:100px; height:100px; top:'+input[i][1]*100+'px; left:'+input[i][0]*100+'px;"></div>');
+				}
+			}
+
+
+			findPath = function(x1,y1,x2,y2,piece){
+				var chessGrid = grid.clone();
+				chessGrid.piece = piece;
+				chessGrid.getNeighbors = getChessNeighbors;
+				var path = finder.findPath(x1, y1, x2, y2, chessGrid);
+
+				$('#board').html('');
+				draw2DArray(matrix);
+				drawPath(path);
+
+				return path;
+			}
+
+			findPath(1,7,5,6,"knight");
+
+			console.log('findPath(x1,y1,x2,y2,"[piece_type]");');
+
+		})
+		</script>
+	</body>
+</html>
