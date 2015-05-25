@@ -14,17 +14,24 @@
 		html,body{
 			background-color: #555;
 		}
+		h1, a{
+			font-family: sans-serif;
+			color: #fff;
+			text-align: center;
+		}
 		</style>
 	</head>
 	<body>
-
+		<h1>0</h1>
 		<script src="bower_components/pathfinding/pathfinding-browser.min.js"></script>
 		<script src="bower_components/phaser/build/phaser.min.js"></script>
 		<script src="bower_components/jquery/dist/jquery.js"></script>
 		<script type="text/javascript">
 		var findPath, matrix;
 
-		var tileSize = 64;
+		var tileSize = 48;
+
+		var score = 0;
 
 		console.log('game start!');
 
@@ -71,7 +78,7 @@
 			    return possibleMoves;
 			};
 
-			//chess board?!
+			//game level (walkability)
 			matrix = [
 			    [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
 			    [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1],
@@ -122,7 +129,8 @@
 			    game.load.image('ground', 'assets/ground.png');
 			    game.load.image('enemy-knight', 'assets/knight.png');
 			    game.load.image('enemy-bishop', 'assets/bishop.png');
-			    game.load.spritesheet('main-character', 'assets/princhess.png', 48, 70);
+			    game.load.image('enemy-bishop-odd', 'assets/bishop-odd.png');
+			    game.load.spritesheet('main-character', 'assets/princhess.png', 24, 35);
 			}
 
 			var create = function(){
@@ -133,12 +141,12 @@
 				map.tileHeight = tileSize;
 				map.addTilesetImage('ground');
 
-				levelLayer = map.create('level1', matrix[0].length,matrix.length,64,64);
+				levelLayer = map.create('level1', matrix[0].length,matrix.length,tileSize,tileSize);
 				levelLayer.resizeWorld();
 
 				for(var y = 0; y<matrix.length; y++){
 					for(var x = 0; x < matrix[y].length; x++){
-						map.putTile(matrix[y][x], x, y, levelLayer);
+						map.putTile(matrix[y][x]*2+(x%2)*(y%2) + ((x+1)%2)*((y+1)%2), x, y, levelLayer);
 					}
 				}
 
@@ -153,10 +161,10 @@
 				mainCharacter = game.add.sprite(0,0,'main-character');
 				mainCharacter.oldPosition = {x:0,y:0};
 				mainCharacter.oldMoves = [];
-				mainCharacter.width = 48;
-				mainCharacter.height = 70;
-				mainCharacter.anchor.x = -0.175;
-				mainCharacter.anchor.y = 0.0625;
+				mainCharacter.width = 24;
+				mainCharacter.height = 35;
+				mainCharacter.anchor.x = -0.475;
+				mainCharacter.anchor.y = -0.1825;
 				mainCharacter.animations.add('idle', [0,1,2,3], 5, true);
 				mainCharacter.animations.play('idle');
 				mainCharacter.inputEnabled = true;
@@ -170,7 +178,6 @@
 			}
 
 			var update = function(){
-
 
 			}
 
@@ -213,8 +220,11 @@
 					currentGrid.piece="queen";
 					currentGrid.getNeighbors = getChessNeighbors;
 					//check if any enemy was killed
-					if(!currentGrid.isWalkableAt(x,y)){
+					var enemyKilled = !currentGrid.isWalkableAt(x,y);
+					if(enemyKilled){
 						console.log("you killed an enemy!");
+						score++;
+						$('h1').html(score);
 						for(var i = 0; i < enemies.children.length; i++){
 							var ex = Math.floor(enemies.children[i].x/tileSize);
 							var ey = Math.floor(enemies.children[i].y/tileSize);
@@ -223,14 +233,17 @@
 								enemies.removeChild(enemies.children[i]);
 							}
 						}
+					}
+					moveEnemies();
+					if(enemyKilled){
 						addRandomEnemy();
 						addRandomEnemy();
 					}
-					moveEnemies();
 					//check if dead
 					if(!getUpdatedGrid().isWalkableAt(x,y)){
 						console.log("you're dead!");
 						mainCharacter.kill();
+						$('body').append('<h1><a href="index.html">Game over :( - Play again!</a></h1>');
 						return;
 					}
 					currentGrid = getUpdatedGrid();
@@ -272,15 +285,18 @@
 			}
 
 			var addEnemy = function(x,y,type){
-				enemies.create(x*tileSize, y*tileSize, 'enemy-'+type);
+				enemies.create(x*tileSize, y*tileSize, 'enemy-'+type + (((x%2)*(y%2) + ((x+1)%2)*((y+1)%2)==1 && type=="bishop")?"-odd":""));
 				enemies.children[enemies.children.length-1].piece = type;
-				enemies.children[enemies.children.length-1].anchor.y = 0.5;
+				enemies.children[enemies.children.length-1].anchor.y = 0.35;
+				enemies.children[enemies.children.length-1].anchor.x = -0.15;
 			}
 
 			var addRandomEnemy = function(){
 				var x = Math.floor(Math.random()*matrix.length);
 				var y = Math.floor(Math.random()*matrix.length);
-				if(getUpdatedGrid().isWalkableAt(x,y) && !(x==Math.floor(mainCharacter.x/tileSize) && y==Math.floor(mainCharacter.y/tileSize))){
+				var currentGrid = getUpdatedGrid();
+				currentGrid.setWalkableAt(Math.floor(mainCharacter.x/tileSize), Math.floor(mainCharacter.y/tileSize), false);
+				if(currentGrid.isWalkableAt(x,y)){
 					addEnemy(x,y,enemytypes[Math.floor(Math.random()*enemytypes.length)]);
 				} else {
 					addRandomEnemy();
