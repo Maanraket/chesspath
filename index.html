@@ -3,32 +3,22 @@
 	<head>
 		<title>Chess</title>
 		<style type="text/css">
-		#board{
-			width: 800px;
-			height: 800px;
-			position: relative;
-		}
-
-		.position{
-			background-color: rgba(0,0,0,.5);
-		}
-
-		.position.active{
-			background-color: rgba(255,0,0,.5);
-		}
 		</style>
 	</head>
 	<body>
 
-		<div id="board"></div>
-
 		<script src="bower_components/pathfinding/pathfinding-browser.min.js"></script>
+		<script src="bower_components/phaser/build/phaser.min.js"></script>
 		<script src="bower_components/jquery/dist/jquery.js"></script>
 		<script type="text/javascript">
-		var findPath;
+		var findPath, matrix;
 
 		$(document).ready(function(){
-			//Chess neighbors code
+			/*
+			* -----------------------------
+			*      CHESS PATHFINDING
+			* -----------------------------
+			*/
 			var getChessNeighbors = function(node, diagonalMovement) {
 			    var nodes = this.nodes;
 			    var explore;
@@ -66,7 +56,7 @@
 			};
 
 			//chess board?!
-			var matrix = [
+			matrix = [
 			    [0, 0, 0, 1, 0, 0, 1, 0],
 			    [1, 0, 0, 0, 1, 0, 1, 0],
 			    [0, 0, 0, 0, 0, 0, 1, 0],
@@ -80,24 +70,9 @@
 			
 			var finder = new PF.AStarFinder({
 				heuristic: function(x,y){
-					return 0.5*(x+y);//Lower number means better paths, worse performace.
+					return 0.1*(x+y);//Lower number means better paths, worse performace.
 				}
 			});
-					
-
-			function draw2DArray(input){
-				for(var i = 0; i < input.length; i++){
-					for(var j = 0; j < input[i].length; j++){
-						if(input[i][j]==0) $('#board').append('<div class="position" style=" position:absolute; width:100px; height:100px; top:'+i*100+'px; left:'+j*100+'px;"></div>');
-					}
-				}
-			}
-
-			function drawPath(input){
-				for(var i = 0; i < input.length; i++){
-					$('#board').append('<div class="position active" style="position:absolute; width:100px; height:100px; top:'+input[i][1]*100+'px; left:'+input[i][0]*100+'px;"></div>');
-				}
-			}
 
 
 			findPath = function(x1,y1,x2,y2,piece){
@@ -106,10 +81,6 @@
 				chessGrid.getNeighbors = getChessNeighbors;
 				var path = finder.findPath(x1, y1, x2, y2, chessGrid);
 
-				$('#board').html('');
-				draw2DArray(matrix);
-				drawPath(path);
-
 				return path;
 			}
 
@@ -117,6 +88,45 @@
 
 			console.log('findPath(x1,y1,x2,y2,"[piece_type]");');
 
+
+			/*
+			* -----------------
+			*      PHASER
+			* -----------------
+			*/
+
+
+			var map, layer1;
+
+			var preload = function() {
+			    game.load.image('ground', 'assets/ground.png');
+			}
+
+			var create = function(){
+				map = game.add.tilemap();
+				map.tileWidth = 64;
+				map.tileHeight = 64;
+				map.addTilesetImage('ground');
+
+				layer1 = map.create('level1', matrix.length,matrix.length,64,64);
+				layer1.resizeWorld();
+
+				for(var y = 0; y<matrix.length; y++){
+					for(var x = 0; x < matrix[y].length; x++){
+						map.putTile(matrix[y][x], x, y, layer1);
+					}
+				}
+			}
+
+			var update = function(){
+
+			}
+
+			var render = function(){
+
+			}
+
+			var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'chess', { preload: preload, create: create, update: update, render: render });
 		})
 		</script>
 	</body>
