@@ -115,11 +115,13 @@
 
 			//global game variables
 			var map, enemies, mainCharacter, uiOverlay;
+			var enemytypes = ['knight', 'bishop'];
 
 			//global game functions
 			var preload = function() {
 			    game.load.image('ground', 'assets/ground.png');
 			    game.load.image('enemy-knight', 'assets/knight.png');
+			    game.load.image('enemy-bishop', 'assets/bishop.png');
 			    game.load.spritesheet('main-character', 'assets/princhess.png', 48, 70);
 			}
 
@@ -279,7 +281,7 @@
 				var x = Math.floor(Math.random()*matrix.length);
 				var y = Math.floor(Math.random()*matrix.length);
 				if(getUpdatedGrid().isWalkableAt(x,y) && !(x==Math.floor(mainCharacter.x/tileSize) && y==Math.floor(mainCharacter.y/tileSize))){
-					addEnemy(x,y,"knight");
+					addEnemy(x,y,enemytypes[Math.floor(Math.random()*enemytypes.length)]);
 				} else {
 					addRandomEnemy();
 				}
