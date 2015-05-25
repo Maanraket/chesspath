@@ -3,6 +3,17 @@
 	<head>
 		<title>Chess</title>
 		<style type="text/css">
+		canvas{
+			width: 768px;
+			height: 768px;
+			margin: auto;
+			outline: 10px solid #000;
+			margin-top: 20px;
+		}
+
+		html,body{
+			background-color: #555;
+		}
 		</style>
 	</head>
 	<body>
@@ -12,6 +23,11 @@
 		<script src="bower_components/jquery/dist/jquery.js"></script>
 		<script type="text/javascript">
 		var findPath, matrix;
+
+		var tileSize = 64;
+
+		console.log('game start!');
+
 
 		$(document).ready(function(){
 			/*
@@ -57,14 +73,18 @@
 
 			//chess board?!
 			matrix = [
-			    [0, 0, 0, 1, 0, 0, 1, 0],
-			    [1, 0, 0, 0, 1, 0, 1, 0],
-			    [0, 0, 0, 0, 0, 0, 1, 0],
-			    [1, 0, 0, 0, 1, 0, 1, 0],
-			    [0, 0, 1, 0, 0, 0, 1, 0],
-			    [0, 0, 0, 1, 0, 0, 1, 0],
-			    [1, 0, 0, 0, 1, 0, 1, 0],
-			    [0, 0, 1, 0, 0, 0, 1, 0],
+			    [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+			    [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1],
+			    [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+			    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+			    [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+			    [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+			    [1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0],
+			    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+			    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+			    [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+			    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+			    [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
 			];
 			var grid = new PF.Grid(matrix);
 			
@@ -86,8 +106,6 @@
 
 			findPath(1,7,5,6,"knight");
 
-			console.log('findPath(x1,y1,x2,y2,"[piece_type]");');
-
 
 			/*
 			* -----------------
@@ -95,30 +113,62 @@
 			* -----------------
 			*/
 
+			//global game variables
+			var map, enemies, mainCharacter, uiOverlay;
 
-			var map, layer1;
-
+			//global game functions
 			var preload = function() {
 			    game.load.image('ground', 'assets/ground.png');
+			    game.load.image('enemy-knight', 'assets/knight.png');
+			    game.load.spritesheet('main-character', 'assets/princhess.png', 48, 70);
 			}
 
 			var create = function(){
+				//initialize and draw map
+
 				map = game.add.tilemap();
-				map.tileWidth = 64;
-				map.tileHeight = 64;
+				map.tileWidth = tileSize;
+				map.tileHeight = tileSize;
 				map.addTilesetImage('ground');
 
-				layer1 = map.create('level1', matrix.length,matrix.length,64,64);
-				layer1.resizeWorld();
+				levelLayer = map.create('level1', matrix[0].length,matrix.length,64,64);
+				levelLayer.resizeWorld();
 
 				for(var y = 0; y<matrix.length; y++){
 					for(var x = 0; x < matrix[y].length; x++){
-						map.putTile(matrix[y][x], x, y, layer1);
+						map.putTile(matrix[y][x], x, y, levelLayer);
 					}
 				}
+
+				//UI Overlay
+				uiOverlay = game.add.graphics(0,0);
+
+				//Enemies
+				enemies = game.add.group();
+				addEnemy(3, 3, 'knight');
+
+				//main character
+				mainCharacter = game.add.sprite(0,0,'main-character');
+				mainCharacter.oldPosition = {x:0,y:0};
+				mainCharacter.oldMoves = [];
+				mainCharacter.width = 48;
+				mainCharacter.height = 70;
+				mainCharacter.anchor.x = -0.175;
+				mainCharacter.anchor.y = 0.0625;
+				mainCharacter.animations.add('idle', [0,1,2,3], 5, true);
+				mainCharacter.animations.play('idle');
+				mainCharacter.inputEnabled = true;
+				mainCharacter.input.enableDrag();
+				mainCharacter.input.enableSnap(tileSize, tileSize, false, true);
+				mainCharacter.input.useHandCursor = true; 
+
+				mainCharacter.events.onDragStop.add(getMainMoves);
+
+				getMainMoves(true);
 			}
 
 			var update = function(){
+
 
 			}
 
@@ -126,7 +176,116 @@
 
 			}
 
-			var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'chess', { preload: preload, create: create, update: update, render: render });
+
+			//Other Global functions
+			var drawMoves = function(moves, x, y){
+				uiOverlay.beginFill(0x006600, 0.5);
+				for(var i = 0; i < moves.length; i++){
+					var sx=moves[i].x;
+					var sy=moves[i].y;
+					uiOverlay.drawCircle(sx*tileSize+tileSize/2,sy*tileSize+tileSize/2,tileSize/1.5);
+				}
+				uiOverlay.endFill();
+			}
+
+			var getMainMoves = function(forceLegal){
+				//First, check if our move was legal. Based on previously determined legal moves/current position
+				var legalMove = (forceLegal === true);
+				for(var  i =0; i < mainCharacter.oldMoves.length && !legalMove; i++){
+					legalMove = (mainCharacter.oldMoves[i].x == Math.floor(mainCharacter.x/tileSize) && mainCharacter.oldMoves[i].y == Math.floor(mainCharacter.y/tileSize));
+				}
+				for(var  i =0; i < enemies.children.length && !legalMove; i++){
+					legalMove =(Math.floor(enemies.children[i].x/tileSize) == Math.floor(mainCharacter.x/tileSize) && Math.floor(enemies.children[i].y/tileSize) == Math.floor(mainCharacter.y/tileSize));
+				}
+				//If the move is legal, move the character, get new possible moves and draw those.
+				if(legalMove){
+					//erase possible moves
+					uiOverlay.clear();
+					//move character
+					mainCharacter.oldPosition = {x: mainCharacter.x, y: mainCharacter.y};
+					var x = Math.floor(mainCharacter.x / tileSize);
+					var y = Math.floor(mainCharacter.y / tileSize);
+					//
+					var node = {x:x,y:y};
+					var currentGrid = getUpdatedGrid();
+					currentGrid.piece="queen";
+					currentGrid.getNeighbors = getChessNeighbors;
+					//check if any enemy was killed
+					if(!currentGrid.isWalkableAt(x,y)){
+						console.log("you killed an enemy!");
+						for(var i = 0; i < enemies.children.length; i++){
+							var ex = Math.floor(enemies.children[i].x/tileSize);
+							var ey = Math.floor(enemies.children[i].y/tileSize);
+							if(x==ex && y==ey){
+								enemies.children[i].kill();
+								enemies.removeChild(enemies.children[i]);
+							}
+						}
+						addRandomEnemy();
+						addRandomEnemy();
+					}
+					moveEnemies();
+					//check if dead
+					if(!getUpdatedGrid().isWalkableAt(x,y)){
+						console.log("you're dead!");
+						mainCharacter.kill();
+						return;
+					}
+					currentGrid = getUpdatedGrid();
+					currentGrid.piece="queen";
+					currentGrid.getNeighbors = getChessNeighbors;
+					var moves = currentGrid.getNeighbors(node, null);
+					mainCharacter.oldMoves = moves;
+					drawMoves(moves, x, y);
+				} // If the move was illegal, return the character back to its original position. 
+				else {
+					mainCharacter.x = mainCharacter.oldPosition.x;
+					mainCharacter.y = mainCharacter.oldPosition.y;
+				}
+			}
+
+			var getUpdatedGrid = function(){
+				var newGrid = grid.clone();
+				for(var i = 0; i < enemies.children.length; i++){
+					var x = Math.floor(enemies.children[i].x/tileSize);
+					var y = Math.floor(enemies.children[i].y/tileSize);
+					newGrid.setWalkableAt(x,y,false);
+				}
+				return newGrid;
+			}
+
+			var moveEnemies = function(){
+				for(var i = 0; i < enemies.children.length; i++){
+					var x = Math.floor(enemies.children[i].x/tileSize);
+					var y = Math.floor(enemies.children[i].y/tileSize);
+					var currentGrid = getUpdatedGrid();
+					currentGrid.piece = enemies.children[i].piece;
+					currentGrid.getNeighbors = getChessNeighbors;
+					var path = finder.findPath(x,y, Math.floor(mainCharacter.x/tileSize),Math.floor(mainCharacter.y/tileSize), currentGrid);
+					if(path.length > 0){
+						enemies.children[i].x = path[1][0]*tileSize;
+						enemies.children[i].y = path[1][1]*tileSize;
+					}
+				}
+			}
+
+			var addEnemy = function(x,y,type){
+				enemies.create(x*tileSize, y*tileSize, 'enemy-'+type);
+				enemies.children[enemies.children.length-1].piece = type;
+				enemies.children[enemies.children.length-1].anchor.y = 0.5;
+			}
+
+			var addRandomEnemy = function(){
+				var x = Math.floor(Math.random()*matrix.length);
+				var y = Math.floor(Math.random()*matrix.length);
+				if(getUpdatedGrid().isWalkableAt(x,y) && !(x==Math.floor(mainCharacter.x/tileSize) && y==Math.floor(mainCharacter.y/tileSize))){
+					addEnemy(x,y,"knight");
+				} else {
+					addRandomEnemy();
+				}
+			}
+
+			var game = new Phaser.Game(tileSize * matrix.length, tileSize * matrix.length, Phaser.CANVAS, 'chess', { preload: preload, create: create, update: update, render: render });
 		})
 		</script>
 	</body>
