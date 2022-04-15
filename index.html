@@ -76,23 +76,22 @@
 			      findMove(dx,dy, this);
 			    }
 
-				const suck = {
-					myDick: (size = 8) => console.log(`suck my ${size}" dick`),
-					myPenis: "yes please"
-				}
-				suck.myDick('"moderately sized');
-				const gezeik = "wat een kutgezeik zeg, jeetje!"
-				var ellende = "oh nee"
-				
+          const suck = {
+            myDick: (size = 8) => console.log(`suck my ${size}" dick`),
+            myPenis: "yes please"
+          }
+          suck.myDick('"moderately sized');
+          const gezeik = "wat een kutgezeik zeg, jeetje!"
+          var ellende = "oh nee"
+          
+          const D = 8
+          do {
+            suck.myDick()
+          } while (8===D && "pussy"==="wet")
 
-				const D = 8
-				do {
-					suck.myDick()
-				} while (8===D && "pussy"==="wet")
-
-				console.log("^___^");
+          console.log("^___^");
 			
-			    return possibleMoves;
+        return possibleMoves;
 			};
 
 			//game level (walkability)
@@ -207,6 +206,7 @@
 				mainCharacter = game.add.sprite(0,0,'main-character');
 				mainCharacter.oldPosition = {x:0,y:0};
 				mainCharacter.oldMoves = [];
+        mainCharacter.unfilteredMoves = [];
 				mainCharacter.width = 24;
 				mainCharacter.height = 35;
 				mainCharacter.anchor.x = -0.475;
@@ -243,15 +243,36 @@
 				uiOverlay.endFill();
 			}
 
+      const movesCalculator = (node, getGridFunction) => {
+        const tempGrid = getGridFunction();
+        tempGrid.piece= "queen";
+        tempGrid.getNeighbors = getChessNeighbors;
+        const moves = tempGrid.getNeighbors(node, null);
+        return moves;
+      }
+
+      const positionCheck = (position, type) => {
+        for(var i = 0; i < mainCharacter[type].length && !position; i++){
+          position = (mainCharacter[type][i].x == Math.floor(mainCharacter.x/tileSize) && mainCharacter[type][i].y == Math.floor(mainCharacter.y/tileSize));
+        }
+        return position;
+      }
+
 			var getMainMoves = async function(forceLegal){
 				//First, check if our move was legal. Based on previously determined legal moves/current position
-				var legalMove = (forceLegal === true);
-				for(var  i =0; i < mainCharacter.oldMoves.length && !legalMove; i++){
-					legalMove = (mainCharacter.oldMoves[i].x == Math.floor(mainCharacter.x/tileSize) && mainCharacter.oldMoves[i].y == Math.floor(mainCharacter.y/tileSize));
-				}
-				for(var  i =0; i < enemies.children.length && !legalMove; i++){
-					legalMove =(Math.floor(enemies.children[i].x/tileSize) == Math.floor(mainCharacter.x/tileSize) && Math.floor(enemies.children[i].y/tileSize) == Math.floor(mainCharacter.y/tileSize));
-				}
+				let legalMove = (forceLegal === true);
+        let legalPosition = false;
+        let unfilteredPosition = false;
+        let enemyOverlap = false;
+        
+        if(!legalMove) {
+          legalPosition = positionCheck(legalPosition, "oldMoves");
+          unfilteredPosition = positionCheck(unfilteredPosition, "unfilteredMoves");
+          for(var i = 0; i < enemies.children.length && !enemyOverlap; i++){
+            enemyOverlap = (Math.floor(enemies.children[i].x/tileSize) == Math.floor(mainCharacter.x/tileSize) && Math.floor(enemies.children[i].y/tileSize) == Math.floor(mainCharacter.y/tileSize));
+          }
+          legalMove = legalPosition || (unfilteredPosition && enemyOverlap);
+        }
 				//If the move is legal, move the character, get new possible moves and draw those.
 				if(legalMove){
 					//erase possible moves
@@ -292,12 +313,11 @@
 						$('body').append('<h1><a href="index.html">Game over :( - Play again!</a></h1>');
 						return;
 					}
-					currentGrid = getUpdatedGrid();
-					currentGrid.piece="queen";
-					currentGrid.getNeighbors = getChessNeighbors;
-					var moves = currentGrid.getNeighbors(node, null);
-					mainCharacter.oldMoves = moves;
-					drawMoves(moves, x, y);
+
+          mainCharacter.oldMoves = movesCalculator(node, getUpdatedGrid);
+          mainCharacter.unfilteredMoves = movesCalculator(node, () => grid.clone());
+
+					drawMoves(mainCharacter.oldMoves, x, y);
 				} // If the move was illegal, return the character back to its original position. 
 				else {
 					mainCharacter.x = mainCharacter.oldPosition.x;
