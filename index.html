@@ -96,7 +96,7 @@
 			};
 
 			//game level (walkability)
-			matrix = [
+			oldMatrix = [
 			    [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
 			    [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1],
 			    [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
@@ -110,6 +110,35 @@
 			    [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
 			    [0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
 			];
+
+      /* rules for the matrix:
+
+      TODO:
+      There can be no nodes that are completely walled off from 9 sides
+      prevent a L shape in the generation
+
+      right now:
+      The starting place (0,0) should be zero always
+      ~25% of the squares will be generated as a wall
+
+     */
+
+			const buildMatrix = () => {
+        const matrixArray = [];
+				for(let i = 0; i < 12; i++) {
+          const row = [];
+					for(let j = 0; j < 12; j++) {
+            const square = Math.round(Math.random()*4) < 3 ? 0 : 1;
+            row.push(square);
+					}
+          matrixArray.push(row);
+				}
+        matrixArray[0][0] = 0;
+        return matrixArray;
+			}
+
+      matrix = buildMatrix();
+
 			var grid = new PF.Grid(matrix);
 			
 			var finder = new PF.AStarFinder({
