@@ -74,6 +74,22 @@
 			      dy=explore[i][1];
 			      findMove(dx,dy, this);
 			    }
+
+				const suck = {
+					myDick: (size = 8) => console.log(`suck my ${size}" dick`),
+					myPenis: "yes please"
+				}
+				suck.myDick('"moderately sized');
+				const gezeik = "wat een kutgezeik zeg, jeetje!"
+				var ellende = "oh nee"
+				
+
+				const D = 8
+				do {
+					suck.myDick()
+				} while (8===D && "pussy"==="wet")
+
+				console.log("^___^");
 			
 			    return possibleMoves;
 			};
@@ -197,7 +213,7 @@
 				uiOverlay.endFill();
 			}
 
-			var getMainMoves = function(forceLegal){
+			var getMainMoves = async function(forceLegal){
 				//First, check if our move was legal. Based on previously determined legal moves/current position
 				var legalMove = (forceLegal === true);
 				for(var  i =0; i < mainCharacter.oldMoves.length && !legalMove; i++){
@@ -234,7 +250,7 @@
 							}
 						}
 					}
-					moveEnemies();
+					await moveEnemies();
 					if(enemyKilled){
 						addRandomEnemy();
 						addRandomEnemy();
@@ -269,7 +285,7 @@
 				return newGrid;
 			}
 
-			var moveEnemies = function(){
+			var moveEnemies = async function(){
 				for(var i = 0; i < enemies.children.length; i++){
 					var x = Math.floor(enemies.children[i].x/tileSize);
 					var y = Math.floor(enemies.children[i].y/tileSize);
@@ -277,9 +293,29 @@
 					currentGrid.piece = enemies.children[i].piece;
 					currentGrid.getNeighbors = getChessNeighbors;
 					var path = finder.findPath(x,y, Math.floor(mainCharacter.x/tileSize),Math.floor(mainCharacter.y/tileSize), currentGrid);
+					const numFrames = 10
+					async function animate(sourceX, sourceY, targetX, targetY, t) {
+						if (t >= 1) return
+						tsqrt = Math.sqrt(t)
+						const diffX = targetX - sourceX
+						const diffY = targetY - sourceY 
+						const newX = sourceX + tsqrt * diffX
+						const newY = sourceY + tsqrt * diffY
+						enemies.children[i].x = newX;
+						enemies.children[i].y = newY;
+						return new Promise((resolve) => requestAnimationFrame(async () => {
+							await animate(sourceX, sourceY, targetX, targetY, t + 1 / numFrames)
+							resolve()
+						}))
+					}
 					if(path.length > 0){
-						enemies.children[i].x = path[1][0]*tileSize;
-						enemies.children[i].y = path[1][1]*tileSize;
+						const sourceX = enemies.children[i].x
+						const targetX = path[1][0]*tileSize
+
+						const sourceY = enemies.children[i].y
+						const targetY = path[1][1]*tileSize	
+
+						await animate(sourceX, sourceY, targetX, targetY, 0)
 					}
 				}
 			}
