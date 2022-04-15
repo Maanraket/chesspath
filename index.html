@@ -36,6 +36,24 @@
 
 		console.log('game start!');
 
+    const eroticFunction = () => {
+      const suck = {
+        myDick: (size = 8) => console.log(`suck my ${size}" dick`),
+        myPenis: "yes please"
+      }
+
+      suck.myDick('"moderately sized');
+      const gezeik = "wat een kutgezeik zeg, jeetje!"
+      var ellende = "oh nee"
+      
+      const D = 8
+      do {
+        suck.myDick()
+      } while (8===D && "pussy"==="wet")
+
+      console.log("^___^");
+    }
+
 
 		$(document).ready(function(){
 			/*
@@ -75,21 +93,6 @@
 			      dy=explore[i][1];
 			      findMove(dx,dy, this);
 			    }
-
-          const suck = {
-            myDick: (size = 8) => console.log(`suck my ${size}" dick`),
-            myPenis: "yes please"
-          }
-          suck.myDick('"moderately sized');
-          const gezeik = "wat een kutgezeik zeg, jeetje!"
-          var ellende = "oh nee"
-          
-          const D = 8
-          do {
-            suck.myDick()
-          } while (8===D && "pussy"==="wet")
-
-          console.log("^___^");
 			
         return possibleMoves;
 			};
@@ -204,8 +207,8 @@
 
 				//main character
 				mainCharacter = game.add.sprite(0,0,'main-character');
-				mainCharacter.oldPosition = {x:0,y:0};
-				mainCharacter.oldMoves = [];
+				mainCharacter.currentPosition = {x:0,y:0};
+				mainCharacter.currentMoves = [];
         mainCharacter.unfilteredMoves = [];
 				mainCharacter.width = 24;
 				mainCharacter.height = 35;
@@ -266,7 +269,7 @@
         let enemyOverlap = false;
         
         if(!legalMove) {
-          legalPosition = positionCheck(legalPosition, "oldMoves");
+          legalPosition = positionCheck(legalPosition, "currentMoves");
           unfilteredPosition = positionCheck(unfilteredPosition, "unfilteredMoves");
           for(var i = 0; i < enemies.children.length && !enemyOverlap; i++){
             enemyOverlap = (Math.floor(enemies.children[i].x/tileSize) == Math.floor(mainCharacter.x/tileSize) && Math.floor(enemies.children[i].y/tileSize) == Math.floor(mainCharacter.y/tileSize));
@@ -278,7 +281,7 @@
 					//erase possible moves
 					uiOverlay.clear();
 					//move character
-					mainCharacter.oldPosition = {x: mainCharacter.x, y: mainCharacter.y};
+					mainCharacter.currentPosition = {x: mainCharacter.x, y: mainCharacter.y};
 					var x = Math.floor(mainCharacter.x / tileSize);
 					var y = Math.floor(mainCharacter.y / tileSize);
 					//
@@ -314,14 +317,14 @@
 						return;
 					}
 
-          mainCharacter.oldMoves = movesCalculator(node, getUpdatedGrid);
+          mainCharacter.currentMoves = movesCalculator(node, getUpdatedGrid);
           mainCharacter.unfilteredMoves = movesCalculator(node, () => grid.clone());
 
-					drawMoves(mainCharacter.oldMoves, x, y);
+					drawMoves(mainCharacter.currentMoves, x, y);
 				} // If the move was illegal, return the character back to its original position. 
 				else {
-					mainCharacter.x = mainCharacter.oldPosition.x;
-					mainCharacter.y = mainCharacter.oldPosition.y;
+					mainCharacter.x = mainCharacter.currentPosition.x;
+					mainCharacter.y = mainCharacter.currentPosition.y;
 				}
 			}
 
