@@ -295,7 +295,11 @@
 					var path = finder.findPath(x,y, Math.floor(mainCharacter.x/tileSize),Math.floor(mainCharacter.y/tileSize), currentGrid);
 					const numFrames = 10
 					async function animate(sourceX, sourceY, targetX, targetY, t) {
-						if (t >= 1) return
+						if (t >= 1) {
+							enemies.children[i].x = targetX;
+							enemies.children[i].y = targetY;
+							return
+						}
 						tsqrt = Math.sqrt(t)
 						const diffX = targetX - sourceX
 						const diffY = targetY - sourceY 
