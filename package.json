@@ -1,0 +1,21 @@
+{
+  "name": "chesspath",
+  "version": "1.0.0",
+  "description": "chezz",
+  "main": "index.js",
+  "repository": "git@github.com:Maanraket/chesspath.git",
+  "author": "Tom Hutman <tom@ath92.nl>",
+  "license": "MIT",
+  "dependencies": {
+    "pathfinding": "^0.4.18",
+    "phaser": "^3.60.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.4.9"
+  }
+}
