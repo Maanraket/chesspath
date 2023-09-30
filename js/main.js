@@ -1,20 +1,30 @@
 
 import Phaser from "phaser"
 import PF from "pathfinding"
-
-let findPath, matrix;
-const tileSize = 48;
-let score = 0;
+import * as seedrandom from "seedrandom"
 
 import chazz from "../assets/princhess.png";
-
 import bishopOdd from "../assets/bishop-odd.png";
 import bishop from "../assets/bishop.png";
 import knight from "../assets/knight.png";
 import rook from "../assets/rook.png";
 import ground from "../assets/ground.png";
 
+import captureSound from "../sounds/capture.mp3";
+import moveSound from "../sounds/move-self.mp3";
+
+let findPath, matrix;
+const tileSize = 48;
+let score = 0;
+
 let uiOverlay;
+
+const queryParamSeed = new URLSearchParams(window.location.search).get('seed');
+const date = new Date();
+
+const seed = queryParamSeed ?? `${date.getDay()}-${date.getMonth()}-${date.getFullYear()}`;
+
+console.log(seed)
 
 window.onload = () => {
     /*
@@ -88,6 +98,8 @@ window.onload = () => {
 
     // idea for generation: every unit has max 3 squares siding with it. (all diagonals?)
 
+    const rand = seedrandom(seed)
+
     const buildMatrix = () => {
 
         const matrixArray = [];
@@ -95,7 +107,7 @@ window.onload = () => {
             const row = [];
             for (let j = 0; j < 8; j++) {
                 // generation math
-                const square = Math.round(Math.random() * 4) < 3 ? 0 : 1;
+                const square = Math.round(rand() * 4) < 3 ? 0 : 1;
                 row.push(square);
             }
             matrixArray.push(row);
@@ -138,7 +150,6 @@ window.onload = () => {
                 //     sum += matrixArray[rowIndex-1][valueIndex+1];
                 //   }
                 // }
-
             })
         })
 
@@ -175,7 +186,7 @@ window.onload = () => {
     */
 
     //global game variables
-    var map, enemies, mainCharacter, uiOverlay;
+    var map, enemies, mainCharacter;
     var enemytypes = ['rook', 'knight', 'bishop'];
 
     //Other Global functions
@@ -288,10 +299,11 @@ window.onload = () => {
             // enemies.children.each((child) => console.log(child.update()))
 
             // emitr.children.sort(function(a,  {  if (a.scale.x < b.scale.x) {    return -1;  }  else {    return 1;  }});
-            const Set2 = Object.getPrototypeOf(enemies.children).constructor
-            enemies.children = new Set2(enemies.children.getArray().sort((a,b) => b.y - a.y))
+            // const Set2 = Object.getPrototypeOf(enemies.children).constructor
+            // enemies.children = new Set2(enemies.children.getArray().sort((a,b) => b.y - a.y))
+            enemies.children.each((c) => c.setDepth(c.y))
+            mainCharacter.setDepth(mainCharacter.y);
             
-
             drawMoves(mainCharacter.currentMoves, x, y);
         } // If the move was illegal, return the character back to its original position. 
         else {
@@ -313,6 +325,21 @@ window.onload = () => {
 
     var nextFrame = () => new Promise(requestAnimationFrame)
 
+    async function animate(sourceX, sourceY, targetX, targetY, numFrames, callback, t) {
+        if (t >= 1) {
+            callback(targetX, targetY)
+            return
+        }
+        const tsqrt = Math.sqrt(t)
+        const diffX = targetX - sourceX
+        const diffY = targetY - sourceY
+        const newX = sourceX + tsqrt * diffX
+        const newY = sourceY + tsqrt * diffY
+        callback(newX, newY)
+        await nextFrame()
+        return animate(sourceX, sourceY, targetX, targetY, numFrames, callback, t + 1 / numFrames)
+    }
+
     var moveEnemies = async function () {
         console.log(enemies)
 
@@ -327,23 +354,6 @@ window.onload = () => {
             currentGrid.getNeighbors = getChessNeighbors;
             var path = finder.findPath(x, y, Math.floor(mainCharacter.x / tileSize), Math.floor(mainCharacter.y / tileSize), currentGrid);
             
-            const numFrames = 10
-            async function animate(sourceX, sourceY, targetX, targetY, t) {
-                if (t >= 1) {
-                    enemy.x = targetX;
-                    enemy.y = targetY;
-                    return
-                }
-                const tsqrt = Math.sqrt(t)
-                const diffX = targetX - sourceX
-                const diffY = targetY - sourceY
-                const newX = sourceX + tsqrt * diffX
-                const newY = sourceY + tsqrt * diffY
-                enemy.x = newX;
-                enemy.y = newY;
-                await nextFrame()
-                return animate(sourceX, sourceY, targetX, targetY, t + 1 / numFrames)
-            }
             if (path.length > 0) {
                 const sourceX = enemy.x
                 const targetX = path[1][0] * tileSize
@@ -351,7 +361,12 @@ window.onload = () => {
                 const sourceY = enemy.y
                 const targetY = path[1][1] * tileSize
 
-                await animate(sourceX, sourceY, targetX, targetY, 0)
+                function step(x, y) {
+                    enemy.x = x
+                    enemy.y = y
+                }
+
+                await animate(sourceX, sourceY, targetX, targetY, 10, step, 0)
             }
         }
     }
@@ -390,11 +405,16 @@ window.onload = () => {
             frameWidth: 24,
             frameHeight: 35
           });
+          this.load.audio('capture', captureSound);
+          this.load.audio('move', moveSound);
         }
         create () {
             map = this.make.tilemap({ tileWidth: tileSize, tileHeight: tileSize, width: 8, height: 8 });
             map.setRenderOrder(2)
             const tileset = map.addTilesetImage('ground', null, tileSize, tileSize);
+
+            // soundCapture = this.sound.add(captureSound);
+            // moveSound = this.sound.add('move');
             console.log(map, tileset)
             
     
@@ -421,6 +441,7 @@ window.onload = () => {
             mainCharacter.width = 24;
             mainCharacter.height = 35;
             mainCharacter.setOrigin(0.5, 0.5);
+            mainCharacter.setDepth(420);
 
             // Animate main character
             this.anims.create({
@@ -435,6 +456,10 @@ window.onload = () => {
             mainCharacter.inputEnabled = true;
             mainCharacter.setInteractive({ draggable: true, useHandCursor: true });
 
+            this.input.on('dragstart', function (pointer, gameObject) {
+                mainCharacter.setDepth(420);
+            });
+
             this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
               gameObject.x = dragX;
               gameObject.y = dragY;
@@ -446,8 +471,27 @@ window.onload = () => {
                   Phaser.Math.Snap.To(gameObject.x, tileSize, tileSize / 2),
                   Phaser.Math.Snap.To(gameObject.y, tileSize, tileSize / 2)
                 );
+                mainCharacter.setDepth(mainCharacter.y);
                 getMainMoves()
               }
+            });
+
+            this.input.on('pointerdown', async function (pointer, gameObject) {
+                console.log('pointer', pointer, gameObject);
+                const x = pointer.downX;
+                const y = pointer.downY;
+
+                await animate(mainCharacter.x, mainCharacter.y, x, y, 10, (x, y) => {
+                    mainCharacter.x = x
+                    mainCharacter.y = y
+                }, 0)
+
+                mainCharacter.setPosition(
+                    Phaser.Math.Snap.To(x, tileSize, tileSize / 2),
+                    Phaser.Math.Snap.To(y, tileSize, tileSize / 2)
+                );
+                mainCharacter.setDepth(mainCharacter.y);
+                getMainMoves()
             });
 
             getMainMoves(true);
@@ -476,5 +520,5 @@ window.onload = () => {
     console.log(Phaser.Game);
 
     // new Game(width, height, renderer, parent, state, transparent, antialias, physicsConfig)
-    var game = new Phaser.Game(config);
+    const game = new Phaser.Game(config);
 }
