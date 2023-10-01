@@ -453,9 +453,11 @@ window.onload = () => {
             // Make main character interactive and draggable
             mainCharacter.inputEnabled = true;
             mainCharacter.setInteractive({ draggable: true, useHandCursor: true });
+            let isDragging = false;
 
             this.input.on('dragstart', function (pointer, gameObject) {
                 mainCharacter.setDepth(420);
+                isDragging = true;
             });
 
             this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
@@ -464,17 +466,19 @@ window.onload = () => {
             });
     
             this.input.on('dragend', function (pointer, gameObject) {
-              if (gameObject === mainCharacter) {
-                gameObject.setPosition(
-                  Phaser.Math.Snap.To(gameObject.x, tileSize, tileSize / 2),
-                  Phaser.Math.Snap.To(gameObject.y, tileSize, tileSize / 2)
-                );
-                mainCharacter.setDepth(mainCharacter.y);
-                getMainMoves()
-              }
+                isDragging = false;
+                if (gameObject === mainCharacter) {
+                    gameObject.setPosition(
+                        Phaser.Math.Snap.To(gameObject.x, tileSize, tileSize / 2),
+                        Phaser.Math.Snap.To(gameObject.y, tileSize, tileSize / 2)
+                    );
+                    mainCharacter.setDepth(mainCharacter.y);
+                    getMainMoves()
+                }
             });
 
             this.input.on('pointerdown', async function (pointer, gameObject) {
+                if (isDragging) return;
                 console.log('pointer', pointer, gameObject);
                 const x = pointer.downX;
                 const y = pointer.downY;
