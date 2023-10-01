@@ -220,9 +220,9 @@ window.onload = () => {
         return position;
     }
 
-    var getMainMoves = async function (forceLegal) {
+    var getMainMoves = async function (forceLegal = false) {
         //First, check if our move was legal. Based on previously determined legal moves/current position
-        let legalMove = (forceLegal === true);
+        let legalMove = forceLegal;
         let legalPosition = false;
         let unfilteredPosition = false;
         let enemyOverlap = false;
@@ -286,15 +286,15 @@ window.onload = () => {
 
                 if (Math.random() > 0.05) return
 
-                console.log("hee ouwe lekkere lellebel" + " wat zie je er weer snoezig uit vandaag");
-                console.warn("als je nou niet oplet he")
+                // console.log("hee ouwe lekkere lellebel" + " wat zie je er weer snoezig uit vandaag");
+                // console.warn("als je nou niet oplet he")
 
-                console.error("dan sla ik je voor je muil")
-                alert("het is tijd voor een pofje!")
-                const answer = prompt("do you want a pofje? tip: jazeker")
-                if (annswer === "jazeker") {
-                    window.location.href = "http://www.maanraket.nl/experiments/fractals"
-                }
+                // console.error("dan sla ik je voor je muil")
+                // alert("het is tijd voor een pofje!")
+                // const answer = prompt("do you want a pofje? tip: jazeker")
+                // if (answer === "jazeker") {
+                //     window.location.href = "http://www.maanraket.nl/experiments/fractals"
+                // }
                 "zonne lekker pofske toch"
                 "woef, woef! woef! woef!"
             }
@@ -311,10 +311,12 @@ window.onload = () => {
             mainCharacter.setDepth(mainCharacter.y);
             
             drawMoves(mainCharacter.currentMoves, x, y);
+            return true;
         } // If the move was illegal, return the character back to its original position. 
         else {
             mainCharacter.x = mainCharacter.currentPosition.x;
             mainCharacter.y = mainCharacter.currentPosition.y;
+            return false;
         }
     }
 
@@ -480,20 +482,17 @@ window.onload = () => {
             this.input.on('pointerdown', async function (pointer, gameObject) {
                 if (isDragging) return;
                 console.log('pointer', pointer, gameObject);
-                const x = pointer.downX;
-                const y = pointer.downY;
+                const x = Phaser.Math.Snap.To(pointer.downX, tileSize, tileSize / 2);
+                const y = Phaser.Math.Snap.To(pointer.downY, tileSize, tileSize / 2);
 
                 await animate(mainCharacter.x, mainCharacter.y, x, y, 10, (x, y) => {
                     mainCharacter.x = x
                     mainCharacter.y = y
                 }, 0)
 
-                mainCharacter.setPosition(
-                    Phaser.Math.Snap.To(x, tileSize, tileSize / 2),
-                    Phaser.Math.Snap.To(y, tileSize, tileSize / 2)
-                );
+                mainCharacter.setPosition(x,y);
                 mainCharacter.setDepth(mainCharacter.y);
-                getMainMoves()
+                getMainMoves();
             });
 
             getMainMoves(true);
