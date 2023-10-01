@@ -68,6 +68,8 @@ window.onload = () => {
             findMove(dx, dy, this);
         }
 
+        console.log(possibleMoves)
+
         return possibleMoves;
     };
 
@@ -481,11 +483,16 @@ window.onload = () => {
 
             this.input.on('pointerdown', async function (pointer, gameObject) {
                 if (isDragging) return;
-                console.log('pointer', pointer, gameObject);
                 const x = Phaser.Math.Snap.To(pointer.downX, tileSize, tileSize / 2);
                 const y = Phaser.Math.Snap.To(pointer.downY, tileSize, tileSize / 2);
 
-                await animate(mainCharacter.x, mainCharacter.y, x, y, 10, (x, y) => {
+                const xTarget = Math.floor(x / tileSize)
+                const yTarget = Math.floor(y / tileSize)
+
+                const legal = grid.isWalkableAt(xTarget, yTarget) 
+                    && mainCharacter.unfilteredMoves.some(({ x, y }) => x === xTarget && y === yTarget)
+
+                if (legal) await animate(mainCharacter.x, mainCharacter.y, x, y, 10, (x, y) => {
                     mainCharacter.x = x
                     mainCharacter.y = y
                 }, 0)
