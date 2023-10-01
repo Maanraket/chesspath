@@ -11,7 +11,10 @@ import rook from "../assets/rook.png";
 import ground from "../assets/ground.png";
 
 import captureSound from "../sounds/capture.mp3";
-import moveSound from "../sounds/move-self.mp3";
+import moveSound from "../sounds/move.mp3";
+
+const captureAudio = new Audio(captureSound);
+const moveAudio = new Audio(moveSound);
 
 let findPath, matrix;
 const tileSize = 48;
@@ -265,8 +268,11 @@ window.onload = () => {
             console.log("move enemies", currentGrid)
             await moveEnemies();
             if (enemyKilled) {
+                captureAudio.play();
                 addRandomEnemy();
                 addRandomEnemy();
+            } else {
+                moveAudio.play();
             }
             //check if dead
             const newGrid = getUpdatedGrid()
@@ -405,19 +411,11 @@ window.onload = () => {
             frameWidth: 24,
             frameHeight: 35
           });
-          this.load.audio('capture', captureSound);
-          this.load.audio('move', moveSound);
         }
         create () {
             map = this.make.tilemap({ tileWidth: tileSize, tileHeight: tileSize, width: 8, height: 8 });
             map.setRenderOrder(2)
             const tileset = map.addTilesetImage('ground', null, tileSize, tileSize);
-
-            // soundCapture = this.sound.add(captureSound);
-            // moveSound = this.sound.add('move');
-            console.log(map, tileset)
-            
-    
             const levelLayer = map.createBlankLayer('level1', tileset);
 
             for (var y = 0; y < matrix.length; y++) {
