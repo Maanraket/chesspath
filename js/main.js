@@ -13,10 +13,14 @@ import ground from "../assets/ground.png";
 import captureSound from "../sounds/capture.mp3";
 import moveSound from "../sounds/move.mp3";
 import checkSound from "../sounds/check.mp3";
+import startSound from "../sounds/game-start.mp3";
+import endSound from "../sounds/game-end.webm";
 
 const captureAudio = new Audio(captureSound);
 const moveAudio = new Audio(moveSound);
 const checkAudio = new Audio(checkSound);
+const startAudio = new Audio(startSound);
+const endAudio = new Audio(endSound);
 
 let findPath, matrix;
 const tileSize = 48;
@@ -276,7 +280,11 @@ window.onload = () => {
                 addRandomEnemy();
                 addRandomEnemy();
             } else if (getUpdatedGrid().isWalkableAt(x, y)) {
-                moveAudio.play();
+                if (forceLegal) {
+                    startAudio.play()
+                } else {
+                    moveAudio.play();
+                }
             }
             //check if dead
             const newGrid = getUpdatedGrid()
@@ -285,6 +293,7 @@ window.onload = () => {
             if (!getUpdatedGrid().isWalkableAt(x, y)) {
                 console.log("you're dead!");
                 checkAudio.play();
+                endAudio.play();
                 mainCharacter.destroy();
 
                 document.body.insertAdjacentHTML("beforeend", '<h1><a href="index.html">Game over :( - Play again!</a></h1>')
