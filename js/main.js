@@ -1,7 +1,7 @@
 
 import Phaser from "phaser"
 import PF from "pathfinding"
-import * as seedrandom from "seedrandom"
+import seedrandom from "seedrandom"
 
 import chazz from "../assets/princhess.png";
 import bishopOdd from "../assets/bishop-odd.png";
