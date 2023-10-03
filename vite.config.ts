@@ -14,5 +14,6 @@ export default defineConfig({
         index: "index.html",
       },
     },
+    assetsInlineLimit: 0,
   }
 });
