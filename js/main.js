@@ -22,6 +22,8 @@ const checkAudio = new Audio(checkSound);
 const startAudio = new Audio(startSound);
 const endAudio = new Audio(endSound);
 
+console.log(seedrandom, "nakjsndnkjasd")
+
 let findPath, matrix;
 const tileSize = 48;
 let score = 0;
@@ -32,6 +34,8 @@ const queryParamSeed = new URLSearchParams(window.location.search).get('seed');
 const date = new Date();
 
 const seed = queryParamSeed ?? `${date.getDay()}-${date.getMonth()}-${date.getFullYear()}`;
+
+const rand = seedrandom(seed)
 
 console.log(seed)
 
@@ -109,7 +113,6 @@ window.onload = () => {
 
     // idea for generation: every unit has max 3 squares siding with it. (all diagonals?)
 
-    const rand = seedrandom(seed)
 
     const buildMatrix = () => {
 
