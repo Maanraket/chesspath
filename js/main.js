@@ -301,7 +301,7 @@ window.onload = () => {
 
                 document.body.insertAdjacentHTML("beforeend", '<h1><a href="index.html">Game over :( - Play again!</a></h1>')
 
-                if (Math.random() > 0.05) return
+                if (rand() > 0.05) return
 
                 // console.log("hee ouwe lekkere lellebel" + " wat zie je er weer snoezig uit vandaag");
                 // console.warn("als je nou niet oplet he")
@@ -406,12 +406,12 @@ window.onload = () => {
     }
 
     var addRandomEnemy = function () {
-        var x = Math.floor(Math.random() * matrix.length);
-        var y = Math.floor(Math.random() * matrix.length);
+        var x = Math.floor(rand() * matrix.length);
+        var y = Math.floor(rand() * matrix.length);
         var currentGrid = getUpdatedGrid();
         currentGrid.setWalkableAt(Math.floor(mainCharacter.x / tileSize), Math.floor(mainCharacter.y / tileSize), false);
         if (currentGrid.isWalkableAt(x, y)) {
-            addEnemy(x, y, enemytypes[Math.floor(Math.random() * enemytypes.length)]);
+            addEnemy(x, y, enemytypes[Math.floor(rand() * enemytypes.length)]);
         } else {
             addRandomEnemy();
         }
