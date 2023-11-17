@@ -302,7 +302,8 @@ window.onload = () => {
                 console.log("you're dead!");
                 checkAudio.play();
                 endAudio.play();
-                mainCharacter.destroy();
+                mainCharacter.alive = false;
+                mainCharacter.destroy();                
 
                 document.body.insertAdjacentHTML("beforeend", '<h1><a href="index.html">Game over :( - Play again!</a></h1>')
 
@@ -462,6 +463,7 @@ window.onload = () => {
             mainCharacter.unfilteredMoves = [];
             mainCharacter.width = 24;
             mainCharacter.height = 35;
+            mainCharacter.alive = true;
             mainCharacter.setOrigin(0.5, 0.5);
             mainCharacter.setDepth(420);
 
@@ -502,7 +504,7 @@ window.onload = () => {
             });
 
             this.input.on('pointerdown', async function (pointer, gameObject) {
-                if (isDragging) return;
+                if (isDragging || !mainCharacter.alive) return;
                 const x = Phaser.Math.Snap.To(pointer.downX, tileSize, tileSize / 2);
                 const y = Phaser.Math.Snap.To(pointer.downY, tileSize, tileSize / 2);
 
