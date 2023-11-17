@@ -6,13 +6,19 @@
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♟️</text></svg>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style type="text/css">
+		:root {
+			--size: min(95vw, 70vh);
+		}
+
 		canvas {
 			display: block;
-			width: min(95vw, 70vh);
-			height: min(95vw, 70vh);
+			position: absolute;
+			width: var(--size);
+			height: var(--size);
+			top: calc((100vh - var(--size)) / 2);
+			left: calc(50vw - var(--size) / 2);
 			margin: auto;
 			outline: 10px solid #000;
-			margin-top: 20px;
 		}
 
 		html,
