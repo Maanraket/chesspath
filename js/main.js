@@ -305,7 +305,7 @@ window.onload = () => {
                 mainCharacter.alive = false;
                 mainCharacter.destroy();                
 
-                document.body.insertAdjacentHTML("beforeend", '<h1><a href="index.html">Game over :( - Play again!</a></h1>')
+                document.body.insertAdjacentHTML("beforeend", `<h1><a href="${window.location.href}">Game over :( - Play again!</a></h1>`)
 
                 if (rand() > 0.05) return
 
