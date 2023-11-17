@@ -35,6 +35,11 @@ const date = new Date();
 
 const seed = queryParamSeed ?? `${date.getDay()}-${date.getMonth()}-${date.getFullYear()}`;
 
+// add seed to url
+if (!queryParamSeed) {
+    window.history.pushState({}, '', `${window.location.pathname}?seed=${seed}`);
+}
+
 const rand = seedrandom(seed)
 
 console.log(seed)
