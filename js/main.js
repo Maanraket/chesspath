@@ -552,3 +552,28 @@ window.onload = () => {
     // new Game(width, height, renderer, parent, state, transparent, antialias, physicsConfig)
     const game = new Phaser.Game(config);
 }
+
+const footer = document.querySelector("footer")
+const seedButton = document.createElement("a")
+//seedbutton points to the same page, but with a new seed
+
+const nextRandomSeed = Math.floor(rand() * 1000000).toString(16)
+const nextUrl = `${window.location.pathname}?seed=${nextRandomSeed}`
+
+seedButton.innerHTML = "New game"
+seedButton.href = nextUrl
+// add button class
+seedButton.classList.add("button")
+footer.appendChild(seedButton)
+
+//share button: on click, copy url to clipboard
+const shareButton = document.createElement("button")
+shareButton.innerHTML = "Share"
+shareButton.onclick = () => {
+    navigator.clipboard.writeText(`${window.location.origin}${nextUrl}`)
+    setTimeout(() => alert("Copied link to clipboard!"))
+}
+
+shareButton.classList.add("button")
+footer.appendChild(shareButton)
+
