@@ -23,13 +23,13 @@
 
 		html,
 		body {
-			background-color: #555;
+			background-color: #1f321d;
 		}
 
 		h1,
 		a {
 			font-family: sans-serif;
-			color: #fff;
+			color: #d2e9d5;
 			text-align: center;
 		}
 
@@ -44,20 +44,25 @@
 		.button {
 			display: inline-block;
 			padding: 10px 20px;
-			color: #fff;
+			color: #d2e9d5;
 			text-decoration: none;
 			border-radius: 2px;
 			margin: 10px;
 			/* cool green gradient bg */
 			background: linear-gradient(to bottom, #44c767 5%, #5cbf2a 100%);
 			/* nice dark grey green box shadow */
-			box-shadow: 0px 5px 0px 0px #1f3218;
+			box-shadow: 0px 0px 0px 8px #000;
+			font-smooth: never;
+			-webkit-font-smoothing : none;
+			text-transform: uppercase;
+			font-size: .8em;
+			font-weight: bold;
 		}
 
 		.button:hover {
 			/* box shadow transition */
 			transition: box-shadow 0.15s ease-in-out;
-			box-shadow: 0px 5px 15px 0px #1f3218;
+			box-shadow: 0px 0px 0px 10px #000;
 		}
 
 		button.button {
@@ -67,7 +72,6 @@
 			-webkit-appearance: none;
 			-moz-appearance: none;
 			appearance: none;
-			font-size: 1em;
 		}
 	</style>
 </head>
