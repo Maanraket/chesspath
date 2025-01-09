@@ -33,7 +33,7 @@ let uiOverlay;
 const queryParamSeed = new URLSearchParams(window.location.search).get('seed');
 const date = new Date();
 
-const seed = queryParamSeed ?? `${date.getDay()}-${date.getMonth()}-${date.getFullYear()}`;
+const seed = queryParamSeed ?? `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
 
 // add seed to url
 if (!queryParamSeed) {
